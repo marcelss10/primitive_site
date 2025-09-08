@@ -19,25 +19,38 @@ const Admin = () => {
     setSelectedFiles(e.target.files);
   };
 
-  const handleUpload = async () => {
-    if (!selectedFiles) return;
-    
-    setIsUploading(true);
-    
-    // Simulate upload process
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
+const handleUpload = async () => {
+  if (!selectedFiles) return;
+
+  setIsUploading(true);
+
+  const formData = new FormData();
+  for (let i = 0; i < selectedFiles.length; i++) {
+    formData.append("file", selectedFiles[i]);
+  }
+
+  const res = await fetch("/api/upload", {
+    method: "POST",
+    body: formData,
+  });
+
+  if (res.ok) {
     toast({
       title: "Upload concluído!",
-      description: `${selectedFiles.length} foto(s) enviada(s) com marca d'água aplicada.`,
+      description: `${selectedFiles.length} foto(s) enviada(s).`,
     });
-    
-    setIsUploading(false);
-    setSelectedFiles(null);
-    // Reset file input
-    const fileInput = document.getElementById('file-upload') as HTMLInputElement;
-    if (fileInput) fileInput.value = '';
-  };
+  } else {
+    toast({
+      title: "Erro no upload",
+      description: "Não foi possível enviar as fotos.",
+      variant: "destructive",
+    });
+  }
+
+  setIsUploading(false);
+  setSelectedFiles(null);
+};
+
 
   const mockEvents = [
     { id: 1, name: "Casamento Silva", date: "2024-01-20", photos: 45, status: "Ativo" },
@@ -103,7 +116,6 @@ const Admin = () => {
                     <Label htmlFor="event-name">Nome do Evento</Label>
                     <Input id="event-name" placeholder="Ex: Casamento Silva" />
                   </div>
-
                   <div className="space-y-2">
                     <Label htmlFor="event-category">Categoria</Label>
                     <Select>

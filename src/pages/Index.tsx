@@ -67,14 +67,11 @@ const Index = () => {
           
           <h1 className="text-5xl md:text-7xl font-bold mb-6">
             <span className="bg-gradient-accent bg-clip-text text-transparent">
-              
             </span>
             <br />
             <span className="text-foreground"></span>
           </h1>
-          
           <p className="text-xl md:text-2xl text-muted-foreground mb-1 max-w-2xl mx-auto">
-          
           </p>
           
         <div className="flex flex-col sm:flex-row gap-4 justify-center mt-60">
