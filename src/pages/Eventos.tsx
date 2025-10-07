@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,7 @@ import { QRCodeCanvas } from "qrcode.react";
 
 type PhotoType = {
   id: string;
-  src: string; // original
+  src: string;
   alt: string;
   event: string;
   date: string;
@@ -22,7 +22,7 @@ const Eventos = () => {
   const [showQR, setShowQR] = useState<PhotoType | null>(null);
   const [allPhotos, setAllPhotos] = useState<PhotoType[]>([]);
 
-  // 🔍 Importa automaticamente todas as imagens da pasta src/assets/fotos/
+  // Importa imagens da pasta /assets/fotos
   useEffect(() => {
     const importAll = import.meta.glob("@/assets/fotos/*.{jpg,jpeg,png,JPG}", { eager: true });
 
@@ -57,7 +57,6 @@ const Eventos = () => {
     return allPhotos.filter(photo => photo.event === category).length;
   };
 
-  // 🖋️ Função para gerar a marca d'água
   const gerarMarcaDagua = async (src: string) => {
     return new Promise<string>((resolve) => {
       const img = new Image();
@@ -69,14 +68,11 @@ const Eventos = () => {
         const ctx = canvas.getContext("2d")!;
         canvas.width = img.width;
         canvas.height = img.height;
-
-        // Desenha a imagem original
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-        // Configurações da marca d'água
         const fontSize = canvas.width / 5;
         ctx.font = `bold ${fontSize}px Arial`;
-        ctx.fillStyle = "rgba(255, 255, 255, 0.5)"; // mais visível
+        ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.shadowColor = "rgba(0,0,0,0.3)";
@@ -84,11 +80,9 @@ const Eventos = () => {
         ctx.shadowOffsetY = 2;
         ctx.shadowBlur = 4;
 
-        // Rotaciona diagonal
         ctx.translate(canvas.width / 2, canvas.height / 2);
         ctx.rotate(-Math.PI / 6);
 
-        // Repete a marca d'água diagonalmente
         const step = canvas.width / 2;
         for (let x = -canvas.width; x < canvas.width; x += step) {
           for (let y = -canvas.height; y < canvas.height; y += step) {
@@ -98,27 +92,24 @@ const Eventos = () => {
 
         ctx.rotate(Math.PI / 6);
         ctx.translate(-canvas.width / 2, -canvas.height / 2);
-
-        resolve(canvas.toDataURL("image/jpeg", 0.9));
+        resolve(canvas.toDataURL("image/jpeg", 0.8));
       };
     });
   };
 
-  // 💾 Baixar gratuito → com marca d’água
   const baixarComMarcaDagua = async (photo: PhotoType) => {
-    const url = await gerarMarcaDagua(photo.src); // aplica marca d’água apenas no download
+    const url = await gerarMarcaDagua(photo.src);
     const link = document.createElement("a");
     link.href = url;
     link.download = `PRIMITIVE_${photo.alt}`;
     link.click();
   };
 
-  // 💸 Baixar pago → sem marca d’água
   const pagarDownload = (photo: PhotoType) => setShowQR(photo);
 
   const confirmarPagamento = (photo: PhotoType) => {
     const link = document.createElement("a");
-    link.href = photo.src; // original
+    link.href = photo.src;
     link.download = photo.alt;
     link.click();
     setShowQR(null);
@@ -220,68 +211,80 @@ const Eventos = () => {
   );
 };
 
-// 📌 Componente separado para cada foto, marca d'água no site
+// 📷 Componente otimizado de foto
 const PhotoCard = ({ photo, baixarComMarcaDagua, pagarDownload }: {
   photo: PhotoType;
   baixarComMarcaDagua: (photo: PhotoType) => void;
   pagarDownload: (photo: PhotoType) => void;
 }) => {
-  const [srcComWatermark, setSrcComWatermark] = useState(photo.src);
+  const [srcComWatermark, setSrcComWatermark] = useState<string | null>(null);
+  const imgRef = useRef<HTMLImageElement | null>(null);
 
+  // Gera marca d’água só quando visível
   useEffect(() => {
-    const aplicarWatermark = async () => {
-      const url = await gerarMarcaDagua(photo.src);
-      setSrcComWatermark(url);
-    };
-    aplicarWatermark();
-  }, [photo.src]);
+    const gerarMarcaDagua = async (src: string) => {
+      return new Promise<string>((resolve) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.src = src;
 
-  const gerarMarcaDagua = async (src: string) => {
-    return new Promise<string>((resolve) => {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.src = src;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d")!;
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d")!;
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          const fontSize = canvas.width / 8;
+          ctx.font = `bold ${fontSize}px Arial`;
+          ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
 
-        const fontSize = canvas.width / 8;
-        ctx.font = `bold ${fontSize}px Arial`;
-        ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.shadowColor = "rgba(0,0,0,0.3)";
-        ctx.shadowOffsetX = 2;
-        ctx.shadowOffsetY = 2;
-        ctx.shadowBlur = 4;
+          ctx.translate(canvas.width / 2, canvas.height / 2);
+          ctx.rotate(-Math.PI / 6);
 
-        ctx.translate(canvas.width / 2, canvas.height / 2);
-        ctx.rotate(-Math.PI / 6);
-        const step = canvas.width / 2;
-        for (let x = -canvas.width; x < canvas.width; x += step) {
-          for (let y = -canvas.height; y < canvas.height; y += step) {
-            ctx.fillText("PRIMITIVE", x, y);
+          const step = canvas.width / 2;
+          for (let x = -canvas.width; x < canvas.width; x += step) {
+            for (let y = -canvas.height; y < canvas.height; y += step) {
+              ctx.fillText("PRIMITIVE", x, y);
+            }
           }
-        }
-        ctx.rotate(Math.PI / 6);
-        ctx.translate(-canvas.width / 2, -canvas.height / 2);
+          ctx.rotate(Math.PI / 6);
+          ctx.translate(-canvas.width / 2, -canvas.height / 2);
 
-        resolve(canvas.toDataURL("image/jpeg", 0.9));
-      };
-    });
-  };
+          resolve(canvas.toDataURL("image/jpeg", 0.8));
+        };
+      });
+    };
+
+    const observer = new IntersectionObserver(async (entries) => {
+      if (entries[0].isIntersecting) {
+        const url = await gerarMarcaDagua(photo.src);
+        setSrcComWatermark(url);
+        observer.disconnect();
+      }
+    }, { threshold: 0.1 });
+
+    if (imgRef.current) observer.observe(imgRef.current);
+
+    return () => observer.disconnect();
+  }, [photo.src]);
 
   return (
     <div className="relative group">
-      <div className="relative w-full h-64 rounded-lg overflow-hidden">
-        <img src={srcComWatermark} alt={photo.alt} className="w-full h-full object-cover" />
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <span className="text-white text-4xl font-bold opacity-70 select-none">PRIMITIVE</span>
-        </div>
+      <div className="relative w-full h-64 rounded-lg overflow-hidden bg-gray-200">
+        {!srcComWatermark ? (
+          <div className="w-full h-full bg-gray-200 animate-pulse" />
+        ) : (
+          <img
+            ref={imgRef}
+            src={srcComWatermark}
+            alt={photo.alt}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            loading="lazy"
+          />
+        )}
       </div>
       <div className="flex justify-center gap-4 mt-2">
         <button
