@@ -11,12 +11,12 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    mode === 'development' &&
-    componentTagger(),
+    mode === "development" && componentTagger(),
   ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  assetsInclude: ["**/*.JPG", "**/*.JPEG"], // 👈 Adiciona suporte para .JPG maiúsculo
 }));

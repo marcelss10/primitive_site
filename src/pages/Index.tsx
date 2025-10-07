@@ -1,44 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Camera, Users, Award, Sparkles } from "lucide-react";
-import { Link } from "react-router-dom";
-import GalleryGrid from "@/components/gallery-grid";
+import { Link, useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-image.jpg";
-import corporateEvent from "@/assets/corporate-event.jpg";
-import birthdayEvent from "@/assets/birthday-event.jpg";
-import graduationEvent from "@/assets/graduation-event.jpg";
+import videoEvento from "@/assets/fotos-sem-watermark/C1166.mp4"; // ✅ Importa vídeo
 
 const Index = () => {
-  const featuredPhotos = [
-    {
-      id: "1",
-      src: corporateEvent,
-      alt: "Evento corporativo elegante",
-      event: "Corporativo",
-      date: "2024-01-15",
-      likes: 45,
-      downloads: 12
-    },
-    {
-      id: "2",
-      src: birthdayEvent,
-      alt: "Festa de aniversário",
-      event: "Aniversário",
-      date: "2024-01-10",
-      likes: 67,
-      downloads: 23
-    },
-    {
-      id: "3",
-      src: graduationEvent,
-      alt: "Cerimônia de formatura",
-      event: "Formatura",
-      date: "2024-01-08",
-      likes: 89,
-      downloads: 34
-    },
-  ];
+  const navigate = useNavigate();
 
   const stats = [
     { icon: Camera, label: "Fotos Capturadas", value: "10K+" },
@@ -51,6 +19,7 @@ const Index = () => {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
+        {/* Imagem de fundo */}
         <div className="absolute inset-0">
           <img
             src={heroImage}
@@ -59,65 +28,69 @@ const Index = () => {
           />
           <div className="absolute inset-0 bg-background/60" />
         </div>
-        
+
+        {/* Conteúdo principal */}
         <div className="relative z-10 text-center max-w-4xl mx-auto px-4">
           <Badge variant="secondary" className="mb-6 text-sm py-2 px-4">
-          
+            {/* Subtítulo opcional */}
           </Badge>
-          
+
           <h1 className="text-5xl md:text-7xl font-bold mb-6">
             <span className="bg-gradient-accent bg-clip-text text-transparent">
+              {/* Texto principal colorido */}
             </span>
             <br />
-            <span className="text-foreground"></span>
+            <span className="text-foreground">
+              {/* Texto secundário */}
+            </span>
           </h1>
-          <p className="text-xl md:text-2xl text-muted-foreground mb-1 max-w-2xl mx-auto">
+
+          <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+            {/* Texto descritivo opcional */}
           </p>
-          
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mt-60">
-          <Button size="lg" className="bg-gradient-accent text-primary-foreground hover:shadow-glow" asChild>
-            <Link to="/eventos">
-              Ver Portfólio
-              <ArrowRight className="ml-10 h-5 w-5" />
-            </Link>
-          </Button>
-          <Button size="lg" variant="outline" asChild>
-            <Link to="/contato">Solicitar Orçamento</Link>
-          </Button>
-        </div>
 
-        </div>
-      </section>
+          {/* 🔻 Botões realmente mais abaixo */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-40">
+            <Button
+              size="lg"
+              className="bg-gradient-accent text-primary-foreground hover:shadow-glow"
+              asChild
+            >
+              <Link to="/eventos">
+                Ver Portfólio
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+            </Button>
 
-      {/* Stats Section */}
-      <section className="py-20 bg-gradient-card">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <Card key={index} className="text-center p-6 bg-gradient-card border-border hover:shadow-glow transition-all duration-300">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-accent rounded-lg mb-4">
-                  <stat.icon className="h-6 w-6 text-primary-foreground" />
-                </div>
-                <div className="text-2xl md:text-3xl font-bold text-primary mb-2">
-                  {stat.value}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {stat.label}
-                </div>
-              </Card>
-            ))}
+            <Button size="lg" variant="outline" asChild>
+              <Link to="/contato">Solicitar Orçamento</Link>
+            </Button>
           </div>
         </div>
       </section>
 
-      {/* Featured Gallery */}
+      {/* Vídeo em Destaque */}
       <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4">
-          <GalleryGrid 
-            photos={featuredPhotos} 
-            title="Trabalhos em Destaque"
-          />
-          
+        <div className="max-w-5xl mx-auto px-4">
+          <div
+            className="relative cursor-pointer overflow-hidden rounded-lg shadow-lg"
+            onClick={() => navigate("/eventos")} // vai para a página eventos
+          >
+            <video
+              src={videoEvento}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-96 object-cover transition-transform duration-500 hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+              <span className="text-white text-3xl md:text-5xl font-bold">
+                Veja como foi nosso último evento!
+              </span>
+            </div>
+          </div>
+
           <div className="text-center mt-12">
             <Button size="lg" variant="outline" asChild>
               <Link to="/eventos">

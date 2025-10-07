@@ -32,8 +32,8 @@ const Contato = () => {
   const contactInfo = [
     {
       icon: Phone,
-      title: "Whatsapp",
-      value: "+55 (41) 98793-6037",
+      title: "Telefone",
+      value: "+55 (11) 99999-9999",
       description: "Segunda a Sexta, 9h às 18h"
     },
     {
@@ -45,7 +45,7 @@ const Contato = () => {
     {
       icon: MapPin,
       title: "Endereço",
-      value: "Curitiba, PR",
+      value: "São Paulo, SP",
       description: "Atendemos toda a região metropolitana"
     },
     {
@@ -64,8 +64,8 @@ const Contato = () => {
     },
     {
       icon: Users,
-      title: "Eventos Esportivos",
-      description: "Profissionalismo para seu evento"
+      title: "Eventos Corporativos",
+      description: "Profissionalismo para sua empresa"
     },
     {
       icon: Calendar,
