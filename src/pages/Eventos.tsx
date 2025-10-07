@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,7 +22,6 @@ const Eventos = () => {
   const [showQR, setShowQR] = useState<PhotoType | null>(null);
   const [allPhotos, setAllPhotos] = useState<PhotoType[]>([]);
 
-  // Importa imagens da pasta /assets/fotos
   useEffect(() => {
     const importAll = import.meta.glob("@/assets/fotos/*.{jpg,jpeg,png,JPG}", { eager: true });
 
@@ -44,7 +43,7 @@ const Eventos = () => {
 
   const categories = ["todos", "Casamento", "Corporativo", "Aniversário", "Formatura", "Outros"];
 
-  const filteredPhotos = allPhotos.filter(photo => {
+  const filteredPhotos = allPhotos.filter((photo) => {
     const matchesSearch =
       photo.alt.toLowerCase().includes(searchTerm.toLowerCase()) ||
       photo.event.toLowerCase().includes(searchTerm.toLowerCase());
@@ -54,11 +53,11 @@ const Eventos = () => {
 
   const getEventCount = (category: string) => {
     if (category === "todos") return allPhotos.length;
-    return allPhotos.filter(photo => photo.event === category).length;
+    return allPhotos.filter((photo) => photo.event === category).length;
   };
 
-  const gerarMarcaDagua = async (src: string) => {
-    return new Promise<string>((resolve) => {
+  const gerarMarcaDagua = useCallback((src: string): Promise<string> => {
+    return new Promise((resolve) => {
       const img = new Image();
       img.crossOrigin = "anonymous";
       img.src = src;
@@ -72,13 +71,9 @@ const Eventos = () => {
 
         const fontSize = canvas.width / 5;
         ctx.font = `bold ${fontSize}px Arial`;
-        ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+        ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.shadowColor = "rgba(0,0,0,0.3)";
-        ctx.shadowOffsetX = 2;
-        ctx.shadowOffsetY = 2;
-        ctx.shadowBlur = 4;
 
         ctx.translate(canvas.width / 2, canvas.height / 2);
         ctx.rotate(-Math.PI / 6);
@@ -92,10 +87,10 @@ const Eventos = () => {
 
         ctx.rotate(Math.PI / 6);
         ctx.translate(-canvas.width / 2, -canvas.height / 2);
-        resolve(canvas.toDataURL("image/jpeg", 0.8));
+        resolve(canvas.toDataURL("image/jpeg", 0.7));
       };
     });
-  };
+  }, []);
 
   const baixarComMarcaDagua = async (photo: PhotoType) => {
     const url = await gerarMarcaDagua(photo.src);
@@ -149,7 +144,7 @@ const Eventos = () => {
                   <SelectValue placeholder="Categoria" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map(category => (
+                  {categories.map((category) => (
                     <SelectItem key={category} value={category}>
                       {category === "todos" ? "Todas as Categorias" : category}
                       <Badge variant="secondary" className="ml-2 text-xs">
@@ -168,8 +163,14 @@ const Eventos = () => {
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {filteredPhotos.length > 0 ? (
-            filteredPhotos.map(photo => (
-              <PhotoCard key={photo.id} photo={photo} baixarComMarcaDagua={baixarComMarcaDagua} pagarDownload={pagarDownload} />
+            filteredPhotos.map((photo) => (
+              <PhotoCard
+                key={photo.id}
+                photo={photo}
+                baixarComMarcaDagua={baixarComMarcaDagua}
+                pagarDownload={pagarDownload}
+                gerarMarcaDagua={gerarMarcaDagua}
+              />
             ))
           ) : (
             <div className="text-center py-20 col-span-full">
@@ -211,74 +212,48 @@ const Eventos = () => {
   );
 };
 
-// 📷 Componente otimizado de foto
-const PhotoCard = ({ photo, baixarComMarcaDagua, pagarDownload }: {
+// 📷 Card otimizado
+const PhotoCard = ({
+  photo,
+  baixarComMarcaDagua,
+  pagarDownload,
+  gerarMarcaDagua,
+}: {
   photo: PhotoType;
   baixarComMarcaDagua: (photo: PhotoType) => void;
   pagarDownload: (photo: PhotoType) => void;
+  gerarMarcaDagua: (src: string) => Promise<string>;
 }) => {
   const [srcComWatermark, setSrcComWatermark] = useState<string | null>(null);
-  const imgRef = useRef<HTMLImageElement | null>(null);
+  const imgRef = useRef<HTMLDivElement | null>(null);
 
-  // Gera marca d’água só quando visível
   useEffect(() => {
-    const gerarMarcaDagua = async (src: string) => {
-      return new Promise<string>((resolve) => {
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.src = src;
-
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          const ctx = canvas.getContext("2d")!;
-          canvas.width = img.width;
-          canvas.height = img.height;
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-          const fontSize = canvas.width / 8;
-          ctx.font = `bold ${fontSize}px Arial`;
-          ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-
-          ctx.translate(canvas.width / 2, canvas.height / 2);
-          ctx.rotate(-Math.PI / 6);
-
-          const step = canvas.width / 2;
-          for (let x = -canvas.width; x < canvas.width; x += step) {
-            for (let y = -canvas.height; y < canvas.height; y += step) {
-              ctx.fillText("PRIMITIVE", x, y);
-            }
-          }
-          ctx.rotate(Math.PI / 6);
-          ctx.translate(-canvas.width / 2, -canvas.height / 2);
-
-          resolve(canvas.toDataURL("image/jpeg", 0.8));
-        };
-      });
-    };
-
     const observer = new IntersectionObserver(async (entries) => {
       if (entries[0].isIntersecting) {
-        const url = await gerarMarcaDagua(photo.src);
-        setSrcComWatermark(url);
+        const cacheKey = `wm_${photo.src}`;
+        const cached = sessionStorage.getItem(cacheKey);
+        if (cached) {
+          setSrcComWatermark(cached);
+        } else {
+          const url = await gerarMarcaDagua(photo.src);
+          setSrcComWatermark(url);
+          sessionStorage.setItem(cacheKey, url);
+        }
         observer.disconnect();
       }
     }, { threshold: 0.1 });
 
     if (imgRef.current) observer.observe(imgRef.current);
-
     return () => observer.disconnect();
-  }, [photo.src]);
+  }, [photo.src, gerarMarcaDagua]);
 
   return (
     <div className="relative group">
-      <div className="relative w-full h-64 rounded-lg overflow-hidden bg-gray-200">
+      <div ref={imgRef} className="relative w-full h-64 rounded-lg overflow-hidden bg-gray-200">
         {!srcComWatermark ? (
-          <div className="w-full h-full bg-gray-200 animate-pulse" />
+          <div className="w-full h-full bg-gray-300 animate-pulse" />
         ) : (
           <img
-            ref={imgRef}
             src={srcComWatermark}
             alt={photo.alt}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
