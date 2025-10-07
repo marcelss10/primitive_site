@@ -70,37 +70,41 @@ const Index = () => {
       </section>
 
       {/* Vídeo em Destaque */}
-      <section className="py-20">
-        <div className="max-w-5xl mx-auto px-4">
-          <div
-            className="relative cursor-pointer overflow-hidden rounded-lg shadow-lg"
-            onClick={() => navigate("/eventos")} // vai para a página eventos
-          >
-            <video
-              src={videoEvento}
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="w-full h-96 object-cover transition-transform duration-500 hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-              <span className="text-white text-3xl md:text-5xl font-bold">
-                Veja como foi nosso último evento!
-              </span>
-            </div>
-          </div>
+   <section className="py-20">
+  <div className="max-w-5xl mx-auto px-4">
+    <div className="relative overflow-hidden rounded-lg shadow-lg">
+      {/* O vídeo */}
+      <video
+        src={videoEvento}
+        autoPlay
+        loop
+        muted
+        playsInline
+        preload="auto"
+        className="w-full h-96 object-cover transition-transform duration-500 hover:scale-105"
+        onClick={() => navigate("/eventos")}
+      />
 
-          <div className="text-center mt-12">
-            <Button size="lg" variant="outline" asChild>
-              <Link to="/eventos">
-                Ver Todos os Eventos
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>
+      {/* Overlay clicável */}
+      <button
+        onClick={() => navigate("/eventos")}
+        className="absolute inset-0 bg-black/30 flex items-center justify-center text-white text-3xl md:text-5xl font-bold hover:bg-black/40 transition"
+      >
+        Veja como foi nosso último evento!
+      </button>
+    </div>
+
+    <div className="text-center mt-12">
+      <Button size="lg" variant="outline" asChild>
+        <Link to="/eventos">
+          Ver Todos os Eventos
+          <ArrowRight className="ml-2 h-5 w-5" />
+        </Link>
+      </Button>
+    </div>
+  </div>
+</section>
+
 
       {/* CTA Section */}
       <section className="py-20 bg-gradient-hero">
